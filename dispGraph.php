@@ -13,7 +13,9 @@ and create graphs to represent that data
 	$connection = new mysqli($host, $username, $password, $dbname);
 	//include the top menu links
 	include("header.php");
-
+?>
+<div>
+<?php
 function queryGraph($connection)
 {
 	//Collect the info for canvas one
@@ -139,3 +141,6 @@ function queryGraph($connection)
 }
 queryGraph($connection);
 ?>
+</div>
+</body>
+</html>

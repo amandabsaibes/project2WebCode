@@ -19,17 +19,16 @@
 	$connection = new mysqli($host, $username, $password, $dbname);
 	//include top menu
 	include("header.php");
-
+?>
+<div>
+<?php
 function queryDaily($connection)
 {
 	//TOTAL people who walked by for the Hour, day, and week
 	$sql = "SELECT * FROM Entries WHERE time > DATE_FORMAT(NOW(),'%Y-%m-%d %H:00:00')";
 	$statement = $connection->query($sql);
 	$total = $statement->num_rows;
-	if($statement->num_rows < 0)
-	{
-		return -1;
-	}
+	if($statement->num_rows < 0) {return -1;}
 	echo("This Hour, <b>" . $total . "</b> People have walked by your sensor<br>");
 
 	$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
@@ -113,3 +112,6 @@ function queryDaily($connection)
 }
 queryDaily($connection);
 ?>
+</div>
+</body>
+</html>
