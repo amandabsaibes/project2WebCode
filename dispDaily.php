@@ -1,5 +1,13 @@
-<!--dispDaily.php-->
-<!--
+<!-- /****************************************************
+** File: Proj1Queries
+** Project: Project 1 
+**
+** This file contains the queries for the database.
+** There are multiple functions that access the database
+** and return information based on what the HTML form
+** asks for. 
+**
+****************************************************/-->
 	displays all information regarding timestamps less massive than one week
 -->
 <?php
@@ -75,56 +83,33 @@ function queryDaily($connection)
 	echo("Today, the fewest people (".$hours[$min].") walked at <b>" . $minTime . "</b><br>");
 	echo("Today, the most people (".$hours[$max].") walked by at <b>" . $maxTime . "</b><br><br>");
 	
-	//find the most and least busy days for Last week
-	$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL DAYOFWEEK(curdate()) - 6 DAY)
-		AND time < DATE_SUB(curdate(), INTERVAL DAYOFWEEK(curdate()) + 1 DAY)";
+	//find the most and least busy days for last week
+	$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL 7 DAY) AND time < curdate()";
 	$statement = $connection->query($sql);
 	if($statement->num_rows < 0)
 	{
 		return -1;
 	}
 	$days = array(0,0,0,0,0,0,0);
-	$dayNames = array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+	$dayNames = array("Sunday" => 0,"Monday" => 0,"Tuesday" => 0,"Wednesday" => 0,"Thursday" => 0,"Friday" => 0,"Saturday" => 0);
 	while($row = $statement->fetch_assoc())
 	{
-		$time = strtotime($row['time']);
-		$timeNow = unixtojd(time());
-		$timeNow = (1 + $timeNow) % 7;
-		$timeNow = floor((time() - $timeNow * 60 * 60 *24));
-		$timeDif = floor(($timeNow - $time)/(60*60 * 24))+1;
-		$days[7-$timeDif]++;			
+		$time = $row['time'];
+		$dayOfWeek = date('l', strtotime($time));
+		$dayNames[$dayOfWeek]++;			
 	}
-	$min = array_search(min($days),$days);
-	$max = array_search(max($days),$days);
-	if($min < 0 || $min >count($days))
+	$min = array_search(min($dayNames),$dayNames);
+	$max = array_search(max($dayNames),$dayNames);
+	if($min < 0 || $min > count($days))
 	{
 		return -1;
 	}
-	if($max < 0 || $max >count($days))
+	if($max < 0 || $max > count($days))
 	{
 		return -1;
 	}
-	echo("Last week, the fewest people walked by on <b>" . $dayNames[$min] . "</b><br>");
-	echo("Last week, the most people walked by on <b>" . $dayNames[$max] . "</b><br>");
-	//determine averages for seconds, minutes, hours, and days
-	$sql = "SELECT * FROM Entries ORDER BY time";
-	$statement = $connection->query($sql);
-	if($statement->num_rows < 0)
-	{
-		return -1;
-	}
-	$total =  $statement->num_rows;
-	$row = $statement->fetch_assoc();
-	$firstTime = strtotime($row['time']);
-	$totalTime = time() - $firstTime;
-	if($totalTime < 0)
-	{
-		return -1;
-	}
-	echo("On Average, every Second <b>" . number_format($total/$totalTime,2) . "</b> People walk by your sensor<br>");
-	echo("On Average, every Minute <b>" . number_format($total/($totalTime/60),2) . "</b> People walk by your sensor<br>");
-	echo("On Average, every Hour <b>" . number_format($total/($totalTime/(60*60)),2) . "</b> People walk by your sensor<br>");
-	echo("On Average, every Day <b>" . number_format($total/($totalTime/(60*60*24)),2) . "</b> People walk by your sensor<br>");
+	echo("Last week, the fewest people walked by on <b>" . $min . "</b> (".$dayNames[$min].")<br>");
+	echo("Last week, the most people walked by on <b>" . $max . "</b> (".$dayNames[$max].")<br><br>");
 }
 queryDaily($connection);
 ?>

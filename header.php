@@ -4,7 +4,7 @@
 -->
 <head>
 <title>People Sensor 9000</title>
-<meta http-equiv="refresh" content="30" />
+<meta http-equiv="refresh" content="10" />
 </head>
 <body>
 	<ul name = "topMenu">

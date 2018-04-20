@@ -31,25 +31,28 @@ function queryGraph($connection)
 		$hours[$hour]++;			
 	}
 	
-	//Collect info for canvas two
-	$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL DAYOFWEEK(curdate()) + 6 DAY)
-		AND time < DATE_SUB(curdate(), INTERVAL DAYOFWEEK(curdate()) - 1 DAY)";
+	//Collect information for canvas 2
+	$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL 7 DAY) AND time < curdate()";
 	$statement = $connection->query($sql);
 	if($statement->num_rows < 0)
 	{
 		return -1;
 	}
-	$days = array(0,0,0,0,0,0,0);//array of days per week
-	$dayNames = array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+	$days = array(0,0,0,0,0,0,0);
+	$dayNames = array("Sunday" => 0,"Monday" => 0,"Tuesday" => 0,"Wednesday" => 0,"Thursday" => 0,"Friday" => 0,"Saturday" => 0);
 	while($row = $statement->fetch_assoc())
 	{
-		$time = strtotime($row['time']);
-		$timeNow = unixtojd(time());
-		$timeNow = (1 + $timeNow) % 7;
-		$timeNow = floor((time() - $timeNow * 60 * 60 *24));
-		$timeDif = floor(($timeNow - $time)/(60*60 * 24))+1;
-		$days[7-$timeDif]++;			
+		$time = $row['time'];
+		$dayOfWeek = date('l', strtotime($time));
+		$dayNames[$dayOfWeek]++;			
 	}
+	$i=0;
+	foreach($dayNames as $key=>$value)
+	{
+		$days[$i] = $value;
+		$i++;
+	}
+
 
 
 ?>
@@ -72,10 +75,10 @@ function queryGraph($connection)
 	paintbrush.fillText("16",182,130);
 	paintbrush.fillText("23",252,130);
 	paintbrush.fillText("0",2,117);
-	paintbrush.fillText("25",2,115-25+2);
-	paintbrush.fillText("50",2,115-50+2);
-	paintbrush.fillText("75",2,115-75+2);
-	paintbrush.fillText("100",2,17);
+	paintbrush.fillText("5",2,115-25+2);
+	paintbrush.fillText("10",2,115-50+2);
+	paintbrush.fillText("15",2,115-75+2);
+	paintbrush.fillText("20",2,17);
 	paintbrush.rect(20,20,240,100);
 	paintbrush.stroke();
 	var i = 0;
@@ -112,10 +115,10 @@ function queryGraph($connection)
 	paintbrush.fillText("Thur",182,130);
 	paintbrush.fillText("Sat",252,130);
 	paintbrush.fillText("0",2,117);
-	paintbrush.fillText("125",2,115-25+2);
-	paintbrush.fillText("250",2,115-50+2);
-	paintbrush.fillText("375",2,115-75+2);
-	paintbrush.fillText("500",2,17);
+	paintbrush.fillText("5",2,115-25+2);
+	paintbrush.fillText("10",2,115-50+2);
+	paintbrush.fillText("15",2,115-75+2);
+	paintbrush.fillText("20",2,17);
 	paintbrush.rect(20,20,240,100);
 	paintbrush.stroke();
 	i = 0;
@@ -125,8 +128,8 @@ function queryGraph($connection)
 		paintbrush.fillRect((i*38)+22,115 - days[i],5,5);
 		if(i > 0)
 		{
-			paintbrush.moveTo((i-1)*38+22,115 - (days[i-1])/5+2);
-			paintbrush.lineTo(i*38+22,115 - days[i]/5+2);
+			paintbrush.moveTo((i-1)*38+22,115 - (days[i-1])/2+2);
+			paintbrush.lineTo(i*38+22,115 - days[i]/2+2);
 			paintbrush.stroke();
 		}
 	}
