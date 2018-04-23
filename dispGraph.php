@@ -1,3 +1,14 @@
+
+<!-- /****************************************************
+** File: Proj2DispGraph
+** Project: Project 2 
+**
+** This file contains the queries for the database.
+** There are multiple functions that access the database
+** and return information based on what the HTML form
+** asks for. 
+**
+****************************************************/-->
 <!--dispGraph.php-->
 <!--
 	This script gathers all the relevant data from mySQL server,
@@ -13,9 +24,11 @@ and create graphs to represent that data
 	$connection = new mysqli($host, $username, $password, $dbname);
 	//include the top menu links
 	include("header.php");
+	include_once("Proj2Queries.php")
 ?>
 <div>
 <?php
+
 function queryGraph($connection)
 {
 	//Collect the info for canvas one

@@ -1,67 +1,24 @@
+
+<!-- /****************************************************
+** File: Proj2Header
+** Project: Project 2 
+**
+** This file contains the queries for the database.
+** There are multiple functions that access the database
+** and return information based on what the HTML form
+** asks for. 
+**
+****************************************************/-->
 <!--header.php-->
 <!--
 	Creates top Menu
 -->
 <html>
-<head>
-<title>People Sensor 9000</title>
-<meta http-equiv="refresh" content="10" />
-
-<style>
-
-body
-{
-	background: linear-gradient(to bottom,#F9D5D3, #BBC7BA);
-	font-family: Arial;
-}
-
-h2
-{
-	color: #807F89;
-}
-
-div
-{
-	margin-top: 5%;
-}
-
-ul 
-{
-    list-style-type: none;
-    margin: 0;
-    margin-left:-1%;
-    padding: 0;
-    overflow: hidden;
-    background-color: floralwhite;
-    position: fixed;
-    top: 0;
-    width: 103%;
-}
-
-li {
-    float: left;
-}
-
-li a {
-    display: block;
-    color: black;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-li a:hover:not(.active) {
-    background-color: #BBC7BA;
-}
-
-.active {
-    background-color: #BBC7BA;
-}
-
-</style>
-
-
-</head>
+    <head>
+        <title>People Sensor 9000</title>
+        <meta http-equiv="refresh" content="10" />
+        <link href = "./Proj2Style.css?<?php echo time();?>" type = "text/css" rel = "stylesheet">
+    </head>
 <body>
 
 	<ul name = "topMenu">
