@@ -257,5 +257,23 @@
 		return $totalSince;
 	}
 	
-
+	function CanvasOne() 
+	{
+		global $connection;
+		//Collect the info for canvas one
+		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
+		$statement = $connection->query($sql);
+		if($statement->num_rows < 0)
+		{
+			return -1;
+		}
+		$hours = array(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);//initial array of hours in the day
+		while($row = $statement->fetch_assoc())
+		{
+			$time = $row['time'];
+			$hour = date('H',strtotime($time));
+			$hours[$hour]++;			
+		}
+		return $hours;
+	}
 ?>

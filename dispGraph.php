@@ -24,27 +24,15 @@ and create graphs to represent that data
 	$connection = new mysqli($host, $username, $password, $dbname);
 	//include the top menu links
 	include("header.php");
-	include_once("Proj2Queries.php")
+	include_once("Proj2Queries.php");
 ?>
 <div>
 <?php
-
+$hoursInDay = array();
+$hoursInDay = CanvasOne();
+var_dump($hoursInDay);
 function queryGraph($connection)
 {
-	//Collect the info for canvas one
-	$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
-	$statement = $connection->query($sql);
-	if($statement->num_rows < 0)
-	{
-		return -1;
-	}
-	$hours = array(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);//initial array of hours in the day
-	while($row = $statement->fetch_assoc())
-	{
-		$time = $row['time'];
-		$hour = date('H',strtotime($time));
-		$hours[$hour]++;			
-	}
 	
 	//Collect information for canvas 2
 	$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL 7 DAY) AND time < curdate()";
@@ -76,9 +64,9 @@ function queryGraph($connection)
 <script>
 	var canvas = document.getElementById("graphHour");
 	var paintbrush = canvas.getContext("2d");
-	var hours = <?php echo json_encode($hours); ?>;
+	var hoursInDay = <?php echo json_encode($hoursInDay); ?>;
 	<?php
-	if(json_encode($hours) == FALSE)
+	if(json_encode($hoursInDay) == FALSE)
 	{
 		return -1;
 	}?>
@@ -101,11 +89,11 @@ function queryGraph($connection)
 	//plot data points for all 24 hours
 	for(i = 0; i<24; i++)
 	{
-		paintbrush.fillRect(i*10+22,115 - hours[i],5,5);
+		paintbrush.fillRect(i*10+22,115 - hoursInDay[i],5,5);
 		if(i > 0)
 		{
-			paintbrush.moveTo((i-1)*10+22,115 - hours[i-1]+2);
-			paintbrush.lineTo(i*10+22,115 - hours[i]+2);
+			paintbrush.moveTo((i-1)*10+22,115 - hoursInDay[i-1]+2);
+			paintbrush.lineTo(i*10+22,115 - hoursInDay[i]+2);
 			paintbrush.stroke();
 		}
 	}
