@@ -10,18 +10,14 @@ along with the most recent timestamp
 	$dbname = "emmaleepk";
 	$connection = new mysqli($host, $username, $password, $dbname);
 	include("header.php");
-function queryOther($connection)
-{
-	$sql = "SELECT * FROM Entries ORDER BY time DESC";
-	$statement = $connection->query($sql);
-	if($statement->num_rows < 0)
-	{
-		return -1;
-	}
-	$total = $statement->num_rows;
-	$row = $statement->fetch_assoc();
-	echo ("<b>" . $total . "</b> People have walked by your sensor so far, most recently at <b>" . $row['time'] . "</b><br>");
-}
-queryOther($connection);
-
+	include_once("Proj2Queries.php");
 ?>
+<div>
+<?php
+	echo("<h2>Total Number Since Beginning</h2>");
+	$totalSinceBeginning = TotalSinceBeginning();
+	echo($totalSinceBeginning);
+?>
+</div>
+</body>
+</html>
