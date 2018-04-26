@@ -57,9 +57,12 @@
 		echo("<input type='submit'>");
 	echo("</form>");
 	$parkingLotSelection = $_GET['PL'];
+
+
+
 	if($parkingLotSelection != NULL)
 	{
-		echo("yo yo yo you picked ".$parkingLotSelection);
+		echo("yo you picked ".$parkingLotSelection);
 	}
 
 	function predictByHour()
