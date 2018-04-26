@@ -64,110 +64,77 @@
 	{
 		echo("yo you picked ".$parkingLotSelection);
 	}
+	
 
-	function predictByHour()
+	function getMonthAverage($month)
 	{
-		$recordOfDay = array();
-		$sql = "SELECT DATE_FORMAT(`time`, '%H') as Time, COUNT(`record`) as Count FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%H') ";
-		$result = mysql_query($sql);
-		if($result == false){
-			echo mysql_error();
-		}
-		while($row = mysql_fetch_assoc($result))
-		{
-			$recordOfDay[]=$row;
-			#echo $row[`record`];
-		}	
-		
-		#Train#
-		$samples = array();
-		$hours = array();
-		for($i=0; $i<sizeof($recordOfDay);$i++)
-		{		
-			array_push($samples, $recordOfDay[$i]['Count']);
-			array_push($hours, $recordOfDay[$i]['Time']);		
-		}
-		$regression = new LeastSquares();
-		$regression->train($samples, $targets);
-		echo($regression->predict([11]));
-	}
-
-	function predictByHourAndDay($hour, $day)
-	{
-		$dayHourArray = array();
-		$sqlSum = "SELECT COUNT(`record`) as SUM FROM `Entries` WHERE DATE_FORMAT(`time`, '%d') = {$day}";
-		$resultOne = mysql_query($sqlSum);
-		$sum = mysql_result($resultOne, 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%d') as Day, DATE_FORMAT(`time`, '%h')as Hour, COUNT(`record`) as Count FROM `Entries` WHERE DATE_FORMAT(`time`, '%d') ={$day} GROUP BY DATE_FORMAT(`time`, '%h')";
+		$averageTotal = 0;
+		$averageMonthArray = array();
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') as Month, AVG(`record`) as Average FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%m')";
 		$result = mysql_query($sql);
 
 		while($row = mysql_fetch_assoc($result))
 		{
-			$dayHourArray[] = $row;
+			$averageMonthArray[] = $row;
 		}
-		print_r($dayHourArray);
-		for($i=0; $i < count($dayHourArray); $i++){
-			if($dayHourArray[$i]['Hour']==$hour)
+
+		for($i=0; $i < count($averageMonthArray); $i++){
+			if($averageMonthArray[$i]['Month']==$month)
 			{
-				$hourTotal = $dayHourArray[$i]['Count'];
+				$averageTotal = $averageMonthArray[$i]['Average'];
 				break;
 			}							
 		}
-		$average = ($sum+$hourTotal)/2;
-		echo($average);		
+
+		return $averageTotal;		
+	}	
+	#print(getMonthAverage(04));
+
+	#0=Sunday 6=Saturday#
+	function getDayAverage($day)
+	{
+		$averageTotal = 0;
+		$averageWeekArray = array();
+		$sql = "SELECT DATE_FORMAT(`time`, '%w') as Day, AVG(`record`) as Average FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%w')";
+		$result = mysql_query($sql);
+
+		while($row = mysql_fetch_assoc($result))
+		{
+			$averageWeekArray[] = $row;
+		}
+
+		for($i=0; $i < count($averageWeekArray); $i++){
+			if($averageWeekArray[$i]['Day']==$day)
+			{
+				$averageTotal = $averageWeekArray[$i]['Average'];
+				break;
+			}										
+		}	
+		return $averageTotal;	
 	}
+	#print(getDayAverage(5));
+	
 
 	function predictByDayAndMonth($day, $month)
 	{
-		$monthDayArray = array();
-		$sqlSum = "SELECT COUNT(`record`) as SUM FROM `Entries` WHERE DATE_FORMAT(`time`, '%m') = {$month}";
-		$resultOne = mysql_query($sqlSum);
-		$sum = mysql_result($resultOne, 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') as Month, DATE_FORMAT(`time`, '%d')as Day, COUNT(`record`) as Count FROM `Entries` WHERE DATE_FORMAT(`time`, '%m') ={$month} GROUP BY DATE_FORMAT(`time`, '%d')";
-		$result = mysql_query($sql);
-
-		while($row = mysql_fetch_assoc($result))
+		$prediction = 0;
+		$averageDay = getDayAverage($day);
+		#print($averageDay);
+		$averageMonth = getMonthAverage($month);
+		#print($averageMonth);
+		if (($averageDay == 0) || ($averageMonth == 0))
 		{
-			$monthDayArray[] = $row;
+			$prediction = "Not enough data!";
+			return $prediction;
 		}
-
-		for($i=0; $i < count($monthDayArray); $i++){
-			if($monthDayArray[$i]['Day']==$day)
-			{
-				$dayTotal = $monthDayArray[$i]['Count'];
-				break;
-			}							
-		}
-		$average = ($sum+$dayTotal)/2;
-		echo($average);
-		
-	}
-
-	function predictByMonthAndYear($month, $year)
-	{
-		$yearMonthArray = array();
-		$sqlSum = "SELECT COUNT(`record`) as SUM FROM `Entries` WHERE DATE_FORMAT(`time`, '%Y') = {$year}";
-		$resultOne = mysql_query($sqlSum);
-		$sum = mysql_result($resultOne, 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y') as Year, DATE_FORMAT(`time`, '%m')as Month, COUNT(`record`) as Count FROM `Entries` WHERE DATE_FORMAT(`time`, '%Y') ={$year} GROUP BY DATE_FORMAT(`time`, '%m')";
-		$result = mysql_query($sql);
-
-		while($row = mysql_fetch_assoc($result))
+		else
 		{
-			$yearMonthArray[] = $row;
+			$prediction = ($averageDay+$averageMonth)/2;
 		}
-
-		for($i=0; $i < count($yearMonthArray); $i++){
-			if($yearMonthArray[$i]['Month']==$month)
-			{
-				$monthTotal = $yearMonthArray[$i]['Count'];
-				break;
-			}							
-		}
-		$average = ($sum+$monthTotal)/2;
-		echo($average);		
+		return $prediction;		
 	}
-	predictByMonthAndYear(04,2018);
+	print(predictByDayAndMonth(5,04));
+
 	
 
 ?>
