@@ -3,24 +3,24 @@
 ** File: Proj2Header
 ** Project: Project 2 
 **
-** This file contains the queries for the database.
-** There are multiple functions that access the database
-** and return information based on what the HTML form
-** asks for. 
+** This file contains the main navigation header that is
+** displayed at the top of every page of the webpage. 
+** This allows the user to access all the pages at any 
+** point
 **
 ****************************************************/-->
-<!--header.php-->
-<!--
-	Creates top Menu
--->
+
 <html>
     <head>
         <title>People Sensor 9000</title>
+        <!-- How to refresh the page consistently - every 10 seconds -->
         <meta http-equiv="refresh" content="10" />
+        <!-- Connection to stylesheet to make the webpage more visually appealing  -->
         <link href = "./Proj2Style.css?<?php echo time();?>" type = "text/css" rel = "stylesheet">
     </head>
+    
 <body>
-
+	<!-- List that links to other pages in the project -->
 	<ul name = "topMenu">
 		<li class = "menuItem"> <a href = "index.php"> Home </a></li>
 		<li class = "menuItem"> <a href = "dispDaily.php"> Daily Values </a></li>

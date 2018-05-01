@@ -2,29 +2,33 @@
 ** File: Proj2DispDaily.php
 ** Project: Project 2 
 **
-** This file contains the queries for the database.
-** There are multiple functions that access the database
-** and return information based on what the HTML form
-** asks for. 
-**
+** This file displays information about the current 
+** time. Information presented includes the total count
+** for the current day, hour, and week. Other information 
+** is the busiest and slowest times for the current week 
+** and day
 ****************************************************/-->
-	displays all information regarding timestamps less massive than one week
--->
 <?php
 
-	//include top menu
+	// Navigation Header to access all pages
 	include("header.php");
+	// file that contains all the queries used 
 	include_once("Proj2Queries.php");
 ?>
 <div>
 <?php
 
+	// call to functions to find the total in the current
+	// hour, day, week
 	$TotalInHour = TotalInHour();
 	$TotalInDay = TotalInDay();
 	$TotalInWeek = TotalInWeek();
+	// call to function to find the busiest and slowest times
+	// in the current hour and day
 	$maxAndMinHour = MaxAndMinHour();
 	$maxAndMinDay = MaxAndMinDay();
 
+	//print the resulting values on to the webpage
 	echo ("<h2>Totals:</h2>");
 	echo($TotalInHour);
 	echo($TotalInDay);

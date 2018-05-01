@@ -267,6 +267,12 @@
 		return $totalSince;
 	}
 	
+
+	//----------------------------------------------------------------
+    // Name: TotalSinceBeginning
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns total number of rows in database
+    //----------------------------------------------------------------
 	function CanvasOne() 
 	{
 		global $connection;

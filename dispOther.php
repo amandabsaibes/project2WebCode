@@ -1,15 +1,17 @@
-<!--dispOther.php-->
-<!--
-	This script only prints the total number of people who have walked by,
-along with the most recent timestamp
--->
+<!-- /****************************************************
+** File: Proj2DispOther.php
+** Project: Project 2 
+**
+** This file prints the total number of information in the
+** database since the beginning. It also displays the most
+** recent timestamp
+** 
+****************************************************/-->
+
 <?php
-	$host = "database.cse.tamu.edu";
-	$username = "emmaleepk";
-	$password = "csce315AAE";
-	$dbname = "emmaleepk";
-	$connection = new mysqli($host, $username, $password, $dbname);
+	// Navigation header to access all pages
 	include("header.php");
+	// File that contains all the queries that are used
 	include_once("Proj2Queries.php");
 ?>
 <div>
