@@ -116,13 +116,10 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 
 	if($parkingLotSelection != NULL)
 	{
-		//echo("yo you picked ".$parkingLotSelection." and ".$dateSelection);
 		$monthSelected = substr($dateSelection, 5, 2);
-		//echo $monthSelected;
-		$dayOfWeekNumber = DayOfWeekToNumber($dateSelection);
 		echo(predictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
 	}
-	
+/*	
 	function getMonthAverage($month)
 	{
 		$averageTotal = 0;
@@ -146,7 +143,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $averageTotal;		
 	}	
 	#print(getMonthAverage(04));
-
+*/
 	function getMonthCount()
 	{
 		// Here we are counting the total occurances per month so that we can later average
@@ -162,6 +159,8 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		
 	}
 
+
+	//finds the total numbers of days in every month that data was found in 
 	function getActiveDaysInMonth()
 	{
 		$monthActiveDayCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
@@ -174,6 +173,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $monthActiveDayCount;
 	}	
 
+	// takes the total count of each month and divides it by the total number of active days in that month
 	function MonthAverage()
 	{
 		// obtain an array of all the counts per month
@@ -186,6 +186,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		$averagePerMonth = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
 		for($i = 1; $i < 13; $i++)
 		{
+			//prevents division by 0 error :)
 			if($i < 10){$count = "0".$i;}
 			else {$count = "".$i."";}
 			if($activeDaysInMonth[$count] != 0) 
@@ -197,6 +198,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	}
 
 
+	//translates the date to a number (to be used in array)
 	function DayOfWeekToNumber($date)
 	{
 		$dayOfWeek = date('l', strtotime($date));
@@ -205,6 +207,8 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $dayOfWeekNumber;
 	}
 
+
+	//calculates the average for each day of week 
 	function DayAverage()
 	{
 		$countForDayOfWeek = array();
@@ -276,6 +280,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $prediction;		
 	}*/
 
+	//prediction model takes the average for each month and average of each day of week and creates a prediction for the submitted day and month of interest
 	function predictionByDayAndMonth($day, $month)
 	{
 		$averagePerDay = array();
@@ -299,9 +304,75 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	}
 
 	print(predictionByDayAndMonth('04/19/2018',"04"));
+	$dataPointsPrediction = array();
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/15/2018','04'), "label" => '04/15/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/16/2018','04'), "label" => '04/16/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/17/2018','04'), "label" => '04/17/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/18/2018','04'), "label" => '04/18/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/19/2018','04'), "label" => '04/19/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/20/2018','04'), "label" => '04/20/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>predictionByDayAndMonth('04/21/2018','04'), "label" => '04/21/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+
+
+
+
+
+
+
 
 
 ?>
+<script>
+    window.onload = function () 
+    {
+        var chart = new CanvasJS.Chart("chartContaine", {
+        animationEnabled: true,
+        exportEnabled: true,
+        //theme: "light1",
+        backgroundColor: "#fffdd0",
+        title:{
+        text: '<?php echo($chartTitle) ?>'
+        },
+        axisX:{
+        title: "Timeframe",
+        suffix: " "
+        },
+        axisY:{
+        title: "Count",
+        suffix: " people",
+        minimum: 0,
+        //max depends  on the max count found above
+        maximum: 900,
+        interval: 100
+        },
+        data: [{
+        markerColor: "green",
+        type: "line",
+        markerType: "circle",
+
+        markerSize: 10,
+        //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
+        dataPoints: <?php echo json_encode($dataPointsPrediction, JSON_NUMERIC_CHECK); ?>
+        }]
+        });
+        chart.render();
+    }
+</script>
+
+
+<div id="chartContaine" style="height: 370px; width: 70%;"></div>
+                    <script         src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+
+
+
 </div>
 </body>
 </html>
