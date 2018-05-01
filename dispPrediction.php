@@ -120,8 +120,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		$monthSelected = substr($dateSelection, 5, 2);
 		//echo $monthSelected;
 		$dayOfWeekNumber = DayOfWeekToNumber($dateSelection);
-		echo(predictByDayAndMonth($dayOfWeekNumber, $monthSelected));
-
+		echo(predictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
 	}
 	
 	function getMonthAverage($month)
@@ -147,6 +146,56 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $averageTotal;		
 	}	
 	#print(getMonthAverage(04));
+
+	function getMonthCount()
+	{
+		// Here we are counting the total occurances per month so that we can later average
+		// the months with their number of active days
+		$monthOfYearCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`,'%m')";
+		$result = mysql_query($sql);
+		while($row = mysql_fetch_assoc($result))
+		{
+			$monthOfYearCount[$row['Time']] = $row['COUNT(*)'];
+		}
+		return $monthOfYearCount;
+		
+	}
+
+	function getActiveDaysInMonth()
+	{
+		$monthActiveDayCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
+		$result = mysql_query($sql);
+		while ($row = mysql_fetch_assoc($result))
+		{
+			$monthActiveDayCount[$row['Time']] += 1;
+		}
+		return $monthActiveDayCount;
+	}	
+
+	function MonthAverage()
+	{
+		// obtain an array of all the counts per month
+		$countOfMonths = array();
+		$countOfMonths = getMonthCount();
+		// We need to calculate the number of active days per month
+		$activeDaysInMonth = array();
+		$activeDaysInMonth = getActiveDaysInMonth();
+		//After calclating the number of active days per month, we can calculate the average per month for the entire year
+		$averagePerMonth = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+		for($i = 1; $i < 13; $i++)
+		{
+			if($i < 10){$count = "0".$i;}
+			else {$count = "".$i."";}
+			if($activeDaysInMonth[$count] != 0) 
+			{
+				$averagePerMonth[$count] = $countOfMonths[$count]/$activeDaysInMonth[$count];
+			}
+		}
+		return $averagePerMonth;
+	}
+
 
 	function DayOfWeekToNumber($date)
 	{
@@ -180,11 +229,10 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 			$average = $countForDayOfWeek[$i] / $uniqueDayOfWeek[$i];
 			array_push($averagePerDay, $average);	
 		}	
-		//$dayRequested = DayOfWeekToNumber($dayOfWeek);
 		return $averagePerDay;
 	}
 
-
+/*
 	#0=Sunday 6=Saturday#
 	function getDayAverage($day)
 	{
@@ -207,9 +255,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		}	
 		return $averageTotal;	
 	}
-	//print(getDayAverage(5));
 	
-
 	function predictByDayAndMonth($day, $month)
 	{
 		$prediction = 0;
@@ -228,7 +274,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 			$prediction = ($averageDay+$averageMonth)/2;
 		}
 		return $prediction;		
-	}
+	}*/
 
 	function predictionByDayAndMonth($day, $month)
 	{
@@ -238,9 +284,8 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		$dayToNumber = DayOfWeekToNumber($day);		
 
 		$selectedDayAvg = $averagePerDay[$dayToNumber];
-		echo($selectedDayAvg.' ');
-		$selectedMonthAvg = getMonthAverage($month);
-		echo($selectedMonthAvg.' ');	
+		$averagePerMonth = MonthAverage();
+		$selectedMonthAvg = $averagePerMonth[$month];
 		if (($selectedDayAvg == 0) || ($selectedMonthAvg == 0))
 		{
 			$prediction = "Not enough data!";
@@ -253,7 +298,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		return $prediction;
 	}
 
-	print(predictionByDayAndMonth('04/19/2018',04));
+	print(predictionByDayAndMonth('04/19/2018',"04"));
 
 
 ?>
