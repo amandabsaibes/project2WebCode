@@ -18,36 +18,7 @@
     date_defualt_timezone_set("America/Chicago");
 ?>
 
-<?php
 
-	// Outputs the datapoints to be used for the graph for the Last Week
-	// Also outputs the maximum for the graph
-	$returnArrayLastWeek = array();
-	$dataPointsLastWeek = array();
-	$returnArrayLastWeek = DaysAndCountOfCurrentWeek();
-	$dataPointsLastWeek = $returnArrayLastWeek[0];
-	$maxCountLastWeek = $returnArrayLastWeek[1];
-
-	// Outputs the prediction datapoints to be used for the graph for Next Week
-	// Also outputs the maximum for the graph
-	$returnArrayPredicitionWeek = array();
-	$returnArrayPredicitionWeek = PredictNextWeek();
-	$dataPointsPredictionWeek = array();
-	$dataPointsPredictionWeek = $dataPointsPredictionWeek[];
-
-
-	// Outputs the datapoints to be used for the graph for the Last Deek
-	// Also outputs the maximum for the graph
-	$returnArrayLastDay = array();
-	$returnArrayLastDay = HoursAndCountOfCurrentDay();
-	$dataPointsLastDay = array();
-	$dataPointsLastDay = $returnArrayLastDay[0];
-	$maxCountLastDay = $returnArrayLastDay[1];
-
-
-	$nextDayDataPoints = PredictNextDay();
->>>>>>> cc7ae4a03317ac5560b649777f5d86ab57a1295d
-?>
 
 <div>
 <?php
