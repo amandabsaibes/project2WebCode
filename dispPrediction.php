@@ -15,6 +15,7 @@
 	include("header.php");
 	// File that contains all the queries that are used
 	include_once("Proj2Queries.php");
+    date_defualt_timezone_set("America/Chicago");
 ?>
 
 <?php
