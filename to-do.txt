@@ -1,0 +1,55 @@
+*********************************************************************************************************************
+PREDICITION MODEL TO DO:
+			 		  /
+	- day average   \/
+ 			   		   /	
+	- month average  \/ 
+				      		      /	
+	- predicition model average \/
+
+	- predict the next week of information?
+		- if they choose a week that HAS happened:
+			* make the prediction model for every day
+				- graph that prediction model
+			* graph the actual data and show comparison
+
+		- if they choose a week that HAS NOT happened
+			* ensure that the choices they are given have some data in them
+				i.e. cannot allow them to choose a month we don't have any data for
+			* develop assumptions for every day of that week and graph the predictive model
+
+	- make the same kind of model but averaging hours of the day and then averaging that with the average of the 
+	  day of the week
+
+	- make sure to add in the specific parking lot info into queries :/
+	
+	- talk to Brandon? See if he has any other ideas for prediction models
+		*look up forecasting in Excel (maybe using Lynda.com)
+	
+*********************************************************************************************************************
+
+
+
+*********************************************************************************************************************
+DOCUMENTATION TO DO
+
+	- scrum backlog
+		* need to update and make sure we have everything we did in there
+
+	- update the APIs
+		* need to add whatever we did and update the functions
+
+	- comments & coding standards
+		* need to make sure that they're all up-to-date with Lupoli's insanity
+
+	- improvements documentation
+		* need to make sure we discuss EVERYTHING that we did to improve their project
+		* i.e. everything was trash and we had to make it not-trash
+		* discuss everything that we did for the prediction model and how it works and why it is kinda
+		  useful
+
+	- 
+
+
+*********************************************************************************************************************
+
