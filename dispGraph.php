@@ -14,7 +14,7 @@
 	include("header.php");
 	// File that contains all the queries that are used
 	include_once("Proj2Queries.php");
-
+	echo("<br><br><br><br>");
 	// Calls the function to draw information for the first graph
 	CanvasOne();
 	// Calls the function to draw information for the second graph

@@ -18,19 +18,10 @@
 ?>
 
 <?php
-	$arrayDaysAndCount = array();
-	$arrayDaysAndCount = DaysAndCountOfCurrentweek();
-	$arrayDays = array();
-	$arrayCount = array();
-	$arrayDays = $arrayDaysAndCount[0];
-	$arrayCount = $arrayDaysAndCount[1];
 	$dataPoints = array();
-	for($i = 0; $i < count($arrayDays); $i++)
-	{
-		$data = array("y"=>$arrayCount[$i], "label"=>$arrayDays[$i]);
-		array_push($dataPoints, $data);
-	}
-
+	$dataPoints = DaysAndCountOfCurrentweek();
+	$hourData = HoursAndCountOfCurrentDay();
+	var_dump(HourAverage());
 ?>
 
 <div>
@@ -55,8 +46,6 @@
 				echo("<option value = '".$lot."'>");
 			}
 		echo("</datalist> <br>");
-		// echo('<h2>Please select the date that you want a prediction for<br></h2>');
-		// echo('<input type = "date" name = "selectedDay">');
 
 
 	echo("<input type='submit'>");
@@ -73,94 +62,8 @@
 
 	//print(PredictionByDayAndMonth('04/19/2018',"04"));
 	$dataPointsPrediction = array();
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/22/2018','04'), "label" => '04/22/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/23/2018','04'), "label" => '04/23/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/24/2018','04'), "label" => '04/24/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/25/2018','04'), "label" => '04/25/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/26/2018','04'), "label" => '04/26/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/27/2018','04'), "label" => '04/27/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/28/2018','04'), "label" => '04/28/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	//var_dump($dataPointsPrediction);
+	$dataPointsPrediction = PredictNextWeek();
 
-
-
-
-/*	
-	function getMonthAverage($month)
-	{
-		$averageTotal = 0;
-		$averageMonthArray = array();
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') as Month, AVG(`record`) as Average FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%m')";
-		$result = mysql_query($sql);
-
-		while($row = mysql_fetch_assoc($result))
-		{
-			$averageMonthArray[] = $row;
-		}
-
-		for($i=0; $i < count($averageMonthArray); $i++){
-			if($averageMonthArray[$i]['Month']==$month)
-			{
-				$averageTotal = $averageMonthArray[$i]['Average'];
-				break;
-			}							
-		}
-
-		return $averageTotal;		
-	}	
-	#print(getMonthAverage(04));
-*/
-
-/*
-	#0=Sunday 6=Saturday#
-	function getDayAverage($day)
-	{
-		$averageTotal = 0;
-		$averageWeekArray = array();
-		$sql = "SELECT DATE_FORMAT(`time`, '%w') as Day, AVG(`record`) as Average FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%w')";
-		$result = mysql_query($sql);
-
-		while($row = mysql_fetch_assoc($result))
-		{
-			$averageWeekArray[] = $row;
-		}
-
-		for($i=0; $i < count($averageWeekArray); $i++){
-			if($averageWeekArray[$i]['Day']==$day)
-			{
-				$averageTotal = $averageWeekArray[$i]['Average'];
-				break;
-			}										
-		}	
-		return $averageTotal;	
-	}
-	
-	function predictByDayAndMonth($day, $month)
-	{
-		$prediction = 0;
-		$averageDay = getDayAverage($day);
-		echo($averageDay.'<br>');
-		#print($averageDay);
-		$averageMonth = getMonthAverage($month);
-		#print($averageMonth);
-		if (($averageDay == 0) || ($averageMonth == 0))
-		{
-			$prediction = "Not enough data!";
-			return $prediction;
-		}
-		else
-		{
-			$prediction = ($averageDay+$averageMonth)/2;
-		}
-		return $prediction;		
-	}*/
 
 ?>
 
@@ -173,7 +76,7 @@
 	        //theme: "light1",
 	        backgroundColor: "#fffdd0",
 	        title:{
-	        text: "hello"
+	        text: "Last Week With Data"
 	        },
 	        axisX:{
 	        title: "Timeframe",
@@ -205,7 +108,7 @@
         //theme: "light1",
         backgroundColor: "#fffdd0",
         title:{
-        text: "wtf"
+        text: "Next Week of Predicted Data"
         },
         axisX:{
         title: "Timeframe",
@@ -222,7 +125,7 @@
         data: [{
         markerColor: "green",
         type: "line",
-        markerType: "circle",
+        markerType: "square",
 
         markerSize: 10,
         //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
@@ -231,6 +134,38 @@
         });
 
         chart2.render();
+      var chart3 = new CanvasJS.Chart("chartContainer3", {
+        animationEnabled: true,
+        exportEnabled: true,
+        //theme: "light1",
+        backgroundColor: "#fffdd0",
+        title:{
+        text: "Next Week of Predicted Data"
+        },
+        axisX:{
+        title: "Timeframe",
+        suffix: " "
+        },
+        axisY:{
+        title: "Count",
+        suffix: " people",
+        minimum: 0,
+        //max depends  on the max count found above
+        maximum: 500,
+        interval: 100
+        },
+        data: [{
+        markerColor: "green",
+        type: "line",
+        markerType: "square",
+
+        markerSize: 10,
+        //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
+        dataPoints: <?php echo json_encode($hourData, JSON_NUMERIC_CHECK); ?>
+        }]
+        });
+
+        chart3.render();
       }
 
 </script>
@@ -238,7 +173,8 @@
 
 <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 <div id="chartContainer1" style="width: 45%; height: 300px;display: inline-block;"></div> 
-<div id="chartContainer2" style="width: 45%; height: 300px;display: inline-block;"></div><br/>
+<div id="chartContainer2" style="width: 45%; height: 300px;display: inline-block;"></div>
+<div id="chartContainer3" style="width: 45%; height: 300px;display: inline-block;"></div><br/>
 
 <?php PredictNextWeek();?>
 

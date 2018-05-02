@@ -559,6 +559,47 @@ return;
 		return $averagePerDay;
 	}
 
+	function HourAverage()
+	{
+		global $connection;
+		$hourOfDayCount = array("00"=> 0, "01"=>0,"02"=> 0,"03"=> 0,"04"=> 0,"05"=> 0,"06"=> 0,"07"=> 0,"08"=> 0,"09"=> 0,"10"=> 0,"11"=> 0,"12"=> 0,"13"=> 0,"14"=> 0,"15"=> 0,"16"=> 0,"17"=> 0,"18"=> 0,"19"=> 0,"20"=> 0,"21"=> 0,"22"=> 0,"23"=> 0);
+		$sql = "SELECT DATE_FORMAT(`time`, '%H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%H')";
+		$result = $connection->query($sql);
+		while($row = $result->fetch_assoc())
+		{
+			$hourOfDayCount[$row['Time']] = $row['COUNT(*)'];
+		}
+
+		$activeHourOfDayCount = array("00"=> 0, "01"=>0,"02"=> 0,"03"=> 0,"04"=> 0,"05"=> 0,"06"=> 0,"07"=> 0,"08"=> 0,"09"=> 0,"10"=> 0,"11"=> 0,"12"=> 0,"13"=> 0,"14"=> 0,"15"=> 0,"16"=> 0,"17"=> 0,"18"=> 0,"19"=> 0,"20"=> 0,"21"=> 0,"22"=> 0,"23"=> 0);
+
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H')";
+		$result = $connection->query($sql);
+		while($row = $result->fetch_assoc())
+		{
+			$hour = substr($row['Time'],11,2);
+			$activeHourOfDayCount[$hour] += 1;
+		}
+
+		$averageHourOfDay = array("00"=> 0, "01"=>0,"02"=> 0,"03"=> 0,"04"=> 0,"05"=> 0,"06"=> 0,"07"=> 0,"08"=> 0,"09"=> 0,"10"=> 0,"11"=> 0,"12"=> 0,"13"=> 0,"14"=> 0,"15"=> 0,"16"=> 0,"17"=> 0,"18"=> 0,"19"=> 0,"20"=> 0,"21"=> 0,"22"=> 0,"23"=> 0);
+		for($i = 0; $i < 24; $i++)
+		{
+			// Ensures that it matches with the indices of the array
+			if($i < 10){$count = "0".$i;}
+			else {$count = "".$i."";}
+
+			//prevents division by 0 error :)
+			if($activeHourOfDayCount[$count] != 0) 
+			{
+				// Creates average!
+				$averageHourOfDay[$count] = $hourOfDayCount[$count]/$activeHourOfDayCount[$count];
+			}
+		}
+		return $averageHourOfDay;
+
+	}
+
+
+
 	//----------------------------------------------------------------
     // Name: UniqueDaysAndCount
     // PreCondition: Database is created and has values
@@ -573,7 +614,7 @@ return;
 		$uniqueDay = array();
 		$countPerDay = array();
 		// Returns a table with the unique days and their corresponding counts of the last seven days 
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 7";
 		$result = $connection->query($sql);
 		// Lops through the table and stores the results in two vectors
 		while($row = $result->fetch_assoc())
@@ -582,9 +623,40 @@ return;
 			array_unshift($countPerDay, $row['COUNT(*)']);
 		}
 		// Returns an array that holds both arrays
-		$arrayReturn = array();
-		array_push($arrayReturn, $uniqueDay, $countPerDay);
-		return $arrayReturn;
+		$dataPoints = array();
+		for($i = 0; $i < count($uniqueDay); $i++)
+		{
+			$data = array("y"=>$countPerDay[$i], "label"=>$uniqueDay[$i]);
+			array_push($dataPoints, $data);
+		}
+		return $dataPoints;
+	}
+
+	function HoursAndCountOfCurrentDay()
+	{
+		global $connection;
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 1";
+		$result = $connection->query($sql);
+		while($row = $result->fetch_assoc())
+		{
+			$lastDay = $row['Time'];
+		}
+
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
+		$result = $connection->query($sql);
+		$dataPoints = array();
+		while($row = $result->fetch_assoc())
+		{
+			$day = substr($row['Time'],0,10);
+			if($day == $lastDay){
+				$data = array("y"=>$row['COUNT(*)'], "label"=>$row['Time']);
+				array_unshift($dataPoints, $data);
+			}
+			
+			
+		}
+		return $dataPoints;
+
 
 	}
 
@@ -597,8 +669,9 @@ return;
     // to return a predicted count for that day or returns no answer
     // if either averages are 0
     //----------------------------------------------------------------
-	function PredictionByDayAndMonth($day, $month)
+	function PredictionByDayAndMonth($day)
 	{
+		$month = substr($day, 5, 2);
 		$averagePerDay = array();
 		// Obtains the averages of the days of the week
 		$averagePerDay = DayAverage();
@@ -632,13 +705,15 @@ return;
 		// Returns a table with the unique days and their corresponding counts of the last seven days 
 		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
 		$result = $connection->query($sql);
-		echo("here");
+		$dataPoints = array();
 		while($row = $result->fetch_assoc())
 		{
-			$newDay = date("Y-m-d", strtotime(sprintf('+%u day', 1), strtotime($row['Time'])));
-			echo($newDay);
+			$newDay = date("Y-m-d", strtotime(sprintf('+%u day', 7), strtotime($row['Time'])));
+			$prediction = PredictionByDayAndMonth($newDay);
+			$data = array("y"=>$prediction, "label"=>$newDay);
+			array_unshift($dataPoints, $data);
 		}
-
+		return $dataPoints;
 
 	}
 
