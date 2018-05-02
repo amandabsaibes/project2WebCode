@@ -15,14 +15,13 @@
 	include("header.php");
 	// File that contains all the queries that are used
 	include_once("Proj2Queries.php");
-    date_defualt_timezone_set("America/Chicago");
+    //date_defualt_timezone_set("America/Chicago");
 ?>
 
 
 
 <div>
 <?php
-
     $parkingLots = array();
     $notParkingLots = array(2,16,17,28,29,31,39,46,52,53,56,57,105,106,116,121);
     $letterParkingLots = array(10,30,33,36,40,72,95,99,100,122);
