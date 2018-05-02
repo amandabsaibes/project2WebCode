@@ -7,6 +7,7 @@
 ****************************************************/-->
 
 <?php
+
 	#include '/vendor/autoload.php';
 	#use Phpml\Regression\SVR;
 
@@ -17,91 +18,23 @@
 ?>
 
 <?php
-	//----------------------------------------------------------------
-    // Name: UniqueDaysAndCount
-    // PreCondition: Database is created and has values
-    // PostCondition: Returns an array that holds two arrays. One holds the
-	// unique days in the database and the other holds the number of people
-	// at that day (correspond with same index)
-    //----------------------------------------------------------------
-	function UniqueDaysAndCount()
-	{
-		$uniqueDay = array();
-		$countPerDay = array();
-		// Returns a table with the unique days and their corresponding counts
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
-		$result = mysql_query($sql);
-
-		// Lops through the table and stores the results in two vectors
-		while($row = mysql_fetch_assoc($result))
-		{
-			array_push($uniqueDay, $row['Time']);
-			array_push($countPerDay, $row['COUNT(*)']);
-		}
-		// Returns an array that holds both arrays
-		$arrayReturn = array();
-		array_push($arrayReturn, $uniqueDay, $countPerDay);
-		return $arrayReturn;
-
-	}
-
 	$arrayDaysAndCount = array();
-	$arrayDaysAndCount = UniqueDaysAndCount();
+	$arrayDaysAndCount = DaysAndCountOfCurrentweek();
+	$arrayDays = array();
+	$arrayCount = array();
 	$arrayDays = $arrayDaysAndCount[0];
 	$arrayCount = $arrayDaysAndCount[1];
-	var_dump($arrayDays);
-	var_dump($arrayCount);
 	$dataPoints = array();
 	for($i = 0; $i < count($arrayDays); $i++)
 	{
 		$data = array("y"=>$arrayCount[$i], "label"=>$arrayDays[$i]);
 		array_push($dataPoints, $data);
 	}
+
 ?>
-<script>
-    window.onload = function () 
-    {
-        var chart = new CanvasJS.Chart("chartContainer", {
-        animationEnabled: true,
-        exportEnabled: true,
-        //theme: "light1",
-        backgroundColor: "#fffdd0",
-        title:{
-        text: '<?php echo($chartTitle) ?>'
-        },
-        axisX:{
-        title: "Timeframe",
-        suffix: " "
-        },
-        axisY:{
-        title: "Count",
-        suffix: " people",
-        minimum: 0,
-        //max depends  on the max count found above
-        maximum: 900,
-        interval: 100
-        },
-        data: [{
-        markerColor: "#FF1493",
-        type: "line",
-        markerType: "square",
-
-        markerSize: 10,
-        //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
-        dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
-        }]
-        });
-        chart.render();
-    }
-</script>
-
-
-
 
 <div>
 <?php
-echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-      <script src="https://canvasjs.com/assets/script/canvasjs.min.js"> </script>');
 
 	$parkingLots = array();
 	$notParkingLots = array(2,16,17,28,29,31,39,46,52,53,56,57,105,106,116,121);
@@ -122,23 +55,23 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 				echo("<option value = '".$lot."'>");
 			}
 		echo("</datalist> <br>");
-		echo('<h2>Please select the date that you want a prediction for<br></h2>');
-		echo('<input type = "date" name = "selectedDay">');
+		// echo('<h2>Please select the date that you want a prediction for<br></h2>');
+		// echo('<input type = "date" name = "selectedDay">');
 
 
 	echo("<input type='submit'>");
 	echo("</form>");
 	$parkingLotSelection = $_GET['PL'];
-	$dateSelection = $_GET['selectedDay'];
+	// $dateSelection = $_GET['selectedDay'];
 
 	if($parkingLotSelection != NULL)
 	{
-		$monthSelected = substr($dateSelection, 5, 2);
-		echo(PredictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
+		// $monthSelected = substr($dateSelection, 5, 2);
+		// echo(PredictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
 	}
 
 
-	print(PredictionByDayAndMonth('04/19/2018',"04"));
+	//print(PredictionByDayAndMonth('04/19/2018',"04"));
 	$dataPointsPrediction = array();
 	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/22/2018','04'), "label" => '04/22/2018');
 	array_push($dataPointsPrediction, $dataPrediction);
@@ -154,7 +87,7 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	array_push($dataPointsPrediction, $dataPrediction);
 	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/28/2018','04'), "label" => '04/28/2018');
 	array_push($dataPointsPrediction, $dataPrediction);
-
+	//var_dump($dataPointsPrediction);
 
 
 
@@ -230,16 +163,49 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	}*/
 
 ?>
+
 <script>
-    window.onload = function () 
-    {
-        var chart = new CanvasJS.Chart("chartContaine", {
+	window.onload = function () {
+    	var chart1 = new CanvasJS.Chart("chartContainer1", 
+    	{
+	        animationEnabled: true,
+	        exportEnabled: true,
+	        //theme: "light1",
+	        backgroundColor: "#fffdd0",
+	        title:{
+	        text: "hello"
+	        },
+	        axisX:{
+	        title: "Timeframe",
+	        suffix: " "
+		},
+	        axisY:{
+	        title: "Count",
+	        suffix: " people",
+	        minimum: 0,
+	        //max depends  on the max count found above
+	        maximum: 900,
+	        interval: 100
+	        },
+	        data: [
+		{
+		        markerColor: "#FF1493",
+	       		type: "line",
+	        	markerType: "square",
+	        	markerSize: 10,
+	        	//toolTipContent: "Count: {y} person<br>Weight: {x} kg",
+	        	dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK);?>
+       		}]
+        });
+	chart1.render();
+        
+	var chart2 = new CanvasJS.Chart("chartContainer2", {
         animationEnabled: true,
         exportEnabled: true,
         //theme: "light1",
         backgroundColor: "#fffdd0",
         title:{
-        text: '<?php echo($chartTitle) ?>'
+        text: "wtf"
         },
         axisX:{
         title: "Timeframe",
@@ -263,15 +229,18 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
         dataPoints: <?php echo json_encode($dataPointsPrediction, JSON_NUMERIC_CHECK); ?>
         }]
         });
-        chart.render();
-    }
+
+        chart2.render();
+      }
+
 </script>
 
 
-<div id="chartContaine" style="height: 370px; width: 70%;"></div>
-                    <script         src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<div id="chartContainer1" style="width: 45%; height: 300px;display: inline-block;"></div> 
+<div id="chartContainer2" style="width: 45%; height: 300px;display: inline-block;"></div><br/>
 
-
+<?php PredictNextWeek();?>
 
 
 </div>

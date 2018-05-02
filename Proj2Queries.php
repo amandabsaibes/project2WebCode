@@ -560,6 +560,35 @@ return;
 	}
 
 	//----------------------------------------------------------------
+    // Name: UniqueDaysAndCount
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns an array that holds two arrays. One holds the
+	// unique days in the database for the past 7 days and the other 
+	// holds the number of people at that day (correspond with same index)
+    //----------------------------------------------------------------
+
+	function DaysAndCountOfCurrentWeek()
+	{
+		global $connection;
+		$uniqueDay = array();
+		$countPerDay = array();
+		// Returns a table with the unique days and their corresponding counts of the last seven days 
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
+		$result = $connection->query($sql);
+		// Lops through the table and stores the results in two vectors
+		while($row = $result->fetch_assoc())
+		{
+			array_unshift($uniqueDay, $row['Time']);
+			array_unshift($countPerDay, $row['COUNT(*)']);
+		}
+		// Returns an array that holds both arrays
+		$arrayReturn = array();
+		array_push($arrayReturn, $uniqueDay, $countPerDay);
+		return $arrayReturn;
+
+	}
+
+	//----------------------------------------------------------------
     // Name: PredictionByDayAndMonth
     // PreCondition: Database is created and has values. 
     // Date time stamp passed in and month (only two number - ex. (04)) 
@@ -592,9 +621,25 @@ return;
 		else
 		{
 			// Averages the values to develop a prediction for the specified day
-			$prediction = ($selectedDayAvg + $selectedMonthAvg) / 2;
+			$prediction = (2*$selectedDayAvg + $selectedMonthAvg) / 3;
 		}
 		return $prediction;
+	}
+
+	function PredictNextWeek()
+	{
+		global $connection;
+		// Returns a table with the unique days and their corresponding counts of the last seven days 
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
+		$result = $connection->query($sql);
+		echo("here");
+		while($row = $result->fetch_assoc())
+		{
+			$newDay = date("Y-m-d", strtotime(sprintf('+%u day', 1), strtotime($row['Time'])));
+			echo($newDay);
+		}
+
+
 	}
 
 ?>
