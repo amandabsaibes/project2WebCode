@@ -613,6 +613,7 @@ return;
 		global $connection;
 		$uniqueDay = array();
 		$countPerDay = array();
+		$maxCount = 0;
 		// Returns a table with the unique days and their corresponding counts of the last seven days 
 		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 7";
 		$result = $connection->query($sql);
@@ -621,6 +622,7 @@ return;
 		{
 			array_unshift($uniqueDay, $row['Time']);
 			array_unshift($countPerDay, $row['COUNT(*)']);
+			if($row['COUNT(*)'] > $maxCount) {$maxCount = $row['COUNT(*)'];}
 		}
 		// Returns an array that holds both arrays
 		$dataPoints = array();
@@ -629,7 +631,8 @@ return;
 			$data = array("y"=>$countPerDay[$i], "label"=>$uniqueDay[$i]);
 			array_push($dataPoints, $data);
 		}
-		return $dataPoints;
+		$returnArray = array($dataPoints, $maxCount);
+		return $returnArray;
 	}
 
 	function HoursAndCountOfCurrentDay()
@@ -645,19 +648,15 @@ return;
 		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
 		$result = $connection->query($sql);
 		$dataPoints = array();
+		$maxCount = 0;
 		while($row = $result->fetch_assoc())
 		{
-			$day = substr($row['Time'],0,10);
-			if($day == $lastDay){
-				$data = array("y"=>$row['COUNT(*)'], "label"=>$row['Time']);
-				array_unshift($dataPoints, $data);
-			}
-			
-			
+			$data = array("y"=>$row['COUNT(*)'], "label"=>$row['Time']);
+			array_unshift($dataPoints, $data);
+			if($row['COUNT(*)'] > $maxCount) {$maxCount = $row['COUNT(*)'];}
 		}
-		return $dataPoints;
-
-
+		$returnArray = array($dataPoints, $maxCount);
+		return $returnArray;
 	}
 
 	//----------------------------------------------------------------
@@ -699,6 +698,33 @@ return;
 		return $prediction;
 	}
 
+	function PredictionByHourAndDay($dayHour)
+	{
+		$day = substr($dayHour, 0, 10);
+		$averagePerDay = array();
+		$averagePerDay = DayAverage();
+		$dayToNumber = DayOfWeekToNumber($day);
+		$selectedDayAvg = $averagePerDay[$dayToNumber];
+
+		$averagePerHour = array();
+		$averagePerHour = HourAverage();
+		$hour = substr($dayHour, 11);
+		$selectedHourAvg = $averagePerHour[$hour];
+
+		// Checks to ensure that valid averages were obtained
+		if (($selectedDayAvg <= 0) || ($selectedHourAvg <= 0))
+		{
+			$prediction = "Not enough data!";
+			return $prediction;
+		}
+		else
+		{
+			// Averages the values to develop a prediction for the specified day
+			$prediction = (7*$selectedHourAvg + $selectedDayAvg) / 8 - 20;
+		}
+		return $prediction;
+	}
+
 	function PredictNextWeek()
 	{
 		global $connection;
@@ -706,14 +732,41 @@ return;
 		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
 		$result = $connection->query($sql);
 		$dataPoints = array();
+		$maxCount = 0;
 		while($row = $result->fetch_assoc())
 		{
 			$newDay = date("Y-m-d", strtotime(sprintf('+%u day', 7), strtotime($row['Time'])));
 			$prediction = PredictionByDayAndMonth($newDay);
 			$data = array("y"=>$prediction, "label"=>$newDay);
 			array_unshift($dataPoints, $data);
+			if($prediction > $maxCount) {$maxCount = $prediction;}
+
 		}
-		return $dataPoints;
+		$returnArray = array($dataPoints, $maxCount);
+		return $returnArray;
+
+	}
+
+	function PredictNextDay()
+	{
+		global $connection;
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
+		$result = $connection->query($sql);
+		$dataPoints = array();
+		$maxCount = 0;
+		while($row = $result->fetch_assoc())
+		{
+			$time = $row['Time'] . ':00:00';
+			$newTime = date("Y-m-d H:m:s", strtotime(sprintf('+%d hour',24), strtotime($time)));
+			$newHour = substr($newTime, 0, 13);
+			$prediction = PredictionByHourAndDay($newHour);
+			$data = array("y"=>$prediction, "label"=>$newHour);
+			if($prediction > $maxCount) {$maxCount = $prediction;}
+
+		}
+		$returnArray = array($dataPoints, $maxCount);
+		return $returnArray;
+
 
 	}
 

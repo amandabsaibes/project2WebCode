@@ -18,10 +18,33 @@
 ?>
 
 <?php
-	$dataPoints = array();
-	$dataPoints = DaysAndCountOfCurrentweek();
-	$hourData = HoursAndCountOfCurrentDay();
-	var_dump(HourAverage());
+
+	// Outputs the datapoints to be used for the graph for the Last Week
+	// Also outputs the maximum for the graph
+	$returnArrayLastWeek = array();
+	$dataPointsLastWeek = array();
+	$returnArrayLastWeek = DaysAndCountOfCurrentWeek();
+	$dataPointsLastWeek = $returnArrayLastWeek[0];
+	$maxCountLastWeek = $returnArrayLastWeek[1];
+
+	// Outputs the prediction datapoints to be used for the graph for Next Week
+	// Also outputs the maximum for the graph
+	$returnArrayPredicitionWeek = array();
+	$returnArrayPredicitionWeek = PredictNextWeek();
+	$dataPointsPredictionWeek = array();
+	$dataPointsPredictionWeek = $dataPointsPredictionWeek[];
+
+
+	// Outputs the datapoints to be used for the graph for the Last Deek
+	// Also outputs the maximum for the graph
+	$returnArrayLastDay = array();
+	$returnArrayLastDay = HoursAndCountOfCurrentDay();
+	$dataPointsLastDay = array();
+	$dataPointsLastDay = $returnArrayLastDay[0];
+	$maxCountLastDay = $returnArrayLastDay[1];
+
+
+	$nextDayDataPoints = PredictNextDay();
 ?>
 
 <div>
@@ -60,11 +83,6 @@
 	}
 
 
-	//print(PredictionByDayAndMonth('04/19/2018',"04"));
-	$dataPointsPrediction = array();
-	$dataPointsPrediction = PredictNextWeek();
-
-
 ?>
 
 <script>
@@ -87,8 +105,8 @@
 	        suffix: " people",
 	        minimum: 0,
 	        //max depends  on the max count found above
-	        maximum: 900,
-	        interval: 100
+	        maximum:  <?php echo json_encode($maxCountLastWeek + 50)?>,
+	        interval: <?php echo json_encode(($maxCountLastWeek + 50)/10, JSON_NUMERIC_CHECK);?>
 	        },
 	        data: [
 		{
@@ -97,7 +115,7 @@
 	        	markerType: "square",
 	        	markerSize: 10,
 	        	//toolTipContent: "Count: {y} person<br>Weight: {x} kg",
-	        	dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK);?>
+	        	dataPoints: <?php echo json_encode($dataPointsLastWeek, JSON_NUMERIC_CHECK);?>
        		}]
         });
 	chart1.render();
@@ -140,7 +158,37 @@
         //theme: "light1",
         backgroundColor: "#fffdd0",
         title:{
-        text: "Next Week of Predicted Data"
+        text: "Last 24 Hours with Data"
+        },
+        axisX:{
+        title: "Timeframe",
+        suffix: " "
+        },
+        axisY:{
+        title: "Count",
+        suffix: " people",
+        maximum: <?php echo json_encode($maxCountLastDay + 20)?>,
+        interval: <?php echo json_encode($maxCountLastDay + 20)/10?>
+        },
+        data: [{
+        markerColor: "purple",
+        type: "line",
+        markerType: "square",
+
+        markerSize: 10,
+        //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
+        dataPoints: <?php echo json_encode($dataPointsLastDay, JSON_NUMERIC_CHECK); ?>
+        }]
+        });
+
+        chart3.render();
+       var chart4 = new CanvasJS.Chart("chartContainer4", {
+        animationEnabled: true,
+        exportEnabled: true,
+        //theme: "light1",
+        backgroundColor: "#fffdd0",
+        title:{
+        text: "Next Day of Predicted Data"
         },
         axisX:{
         title: "Timeframe",
@@ -151,30 +199,31 @@
         suffix: " people",
         minimum: 0,
         //max depends  on the max count found above
-        maximum: 500,
-        interval: 100
+        maximum: 150,
+        interval: 10
         },
         data: [{
-        markerColor: "green",
+        markerColor: "yellow",
         type: "line",
         markerType: "square",
 
         markerSize: 10,
         //toolTipContent: "Count: {y} person<br>Weight: {x} kg",
-        dataPoints: <?php echo json_encode($hourData, JSON_NUMERIC_CHECK); ?>
+        dataPoints: <?php echo json_encode($nextDayDataPoints, JSON_NUMERIC_CHECK); ?>
         }]
         });
 
-        chart3.render();
+        chart4.render();
       }
 
 </script>
 
 
 <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-<div id="chartContainer1" style="width: 45%; height: 300px;display: inline-block;"></div> 
-<div id="chartContainer2" style="width: 45%; height: 300px;display: inline-block;"></div>
-<div id="chartContainer3" style="width: 45%; height: 300px;display: inline-block;"></div><br/>
+<div id="chartContainer1" style="width: 45%; height: 300px; display: inline-block;"></div> 
+<div id="chartContainer2" style="width: 45%; height: 300px; display: inline-block;"></div>
+<div id="chartContainer3" style="width: 45%; height: 300px; display: inline-block;"></div>
+<div id="chartContainer4" style="width: 45%; height: 300px; display: inline-block;"></div><br/>
 
 <?php PredictNextWeek();?>
 
