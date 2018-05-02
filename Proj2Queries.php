@@ -15,7 +15,7 @@
 	$password = "csce315AAE";
 	$dbname = "emmaleepk";
 	$connection = new mysqli($host, $username, $password, $dbname);
-
+	
 	//----------------------------------------------------------------
     // Name: TotalInDatabase
     // PreCondition: Database is created and has values
@@ -25,7 +25,7 @@
 	{
 		//Total Number of Entries in the database
 		global $connection;
-		$sql = "SELECT * FROM Entries";
+		$sql = "SELECT * FROM Entries WHERE Entering = 1";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 		$totalInDatabase = $statement->num_rows;
@@ -46,7 +46,7 @@
 		$currentMonth = date("Y-m",$currentTime);
 		$currentMonth = $currentMonth . "-01 00:00:00";
 
-		$sql = "SELECT * FROM Entries WHERE time >= '".$currentMonth."'";
+		$sql = "SELECT * FROM Entries WHERE time >= '".$currentMonth."' and Entering = 1";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 		//the number of rows calculates the number of people who have walked by this month
@@ -65,7 +65,7 @@
 		//Total value of entries in the database for the current year
 		$year = date("Y",$currentTime);
 		$currentYear = $year . "01-01 00:000:00";
-		$sql = "SELECT * FROM Entries WHERE time >= '".$currentYear."'";
+		$sql = "SELECT * FROM Entries WHERE time >= '".$currentYear."' and Entering = 1";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 
@@ -83,7 +83,7 @@
 	{
 		//TOTAL people who walked by for the Hour, day, and week
 		global $connection;
-		$sql = "SELECT * FROM Entries WHERE time > DATE_FORMAT(NOW(),'%Y-%m-%d %H:00:00')";
+		$sql = "SELECT * FROM Entries WHERE time > DATE_FORMAT(NOW(),'%Y-%m-%d %H:00:00') and Entering = 1";
 		$statement = $connection->query($sql);
 		$total = $statement->num_rows;
 		if($statement->num_rows < 0) {return -1;}
@@ -99,7 +99,7 @@
 	function TotalInDay()
 	{
 		global $connection;
-		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
+		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() and Entering =1 ORDER BY time";
 		$statement = $connection->query($sql);
 		$total = $statement->num_rows;
 		if($statement->num_rows < 0)
@@ -118,7 +118,7 @@
 	function TotalInWeek()
 	{
 		global $connection;
-		$sql = "SELECT * FROM Entries WHERE time > DATE_SUB(NOW(), INTERVAL 7 DAY)";
+		$sql = "SELECT * FROM Entries WHERE time > DATE_SUB(NOW(), INTERVAL 7 DAY) and Entering = 1";
 		$statement = $connection->query($sql);
 		$total = $statement->num_rows;
 		if($statement->num_rows < 0)
@@ -139,7 +139,7 @@
 		global $connection;
 		//calculates the unique year in the database -- to be used for averages 
 		//averages will only consider months that an entry has been made
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y') Time FROM `Entries` WHERE Entering = 1 GROUP BY DATE_FORMAT(`time`, '%Y')";
 		$statement = $connection->query($sql);
 		$totalNumberOfYears = $statement->num_rows;
 		return $totalNumberOfYears;
@@ -187,7 +187,7 @@
 	{
 		global $connection;
 		//find the most and least busy hours
-		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
+		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() and Entering = 1 ORDER BY time";
 		$statement = $connection->query($sql);
 		$hoursInDay = array(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 		if($statement->num_rows < 0) {return -1;}
@@ -228,7 +228,7 @@
 	{
 		global $connection;
 		//find the most and least busy days for last week
-		$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL 7 DAY) AND time < curdate()";
+		$sql = "SELECT * FROM Entries WHERE time >= DATE_SUB(curdate(),INTERVAL 7 DAY) AND time < curdate() and Entering = 1";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 		$daysInWeek = array(0,0,0,0,0,0,0);
@@ -258,7 +258,7 @@
 	function TotalSinceBeginning()
 	{
 		global $connection;
-		$sql = "SELECT * FROM Entries ORDER BY time DESC";
+		$sql = "SELECT * FROM Entries WHERE Entering = 1 ORDER BY time DESC";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 		$total = $statement->num_rows;
@@ -276,7 +276,7 @@
 	function CanvasOne() 
 	{
 		global $connection;
-		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() ORDER BY time";
+		$sql = "SELECT * FROM Entries WHERE time >= CURDATE() and Entering = 1 ORDER BY time";
 		$statement = $connection->query($sql);
 		if($statement->num_rows < 0) {return -1;}
 		//initial array of hours in the day
@@ -405,15 +405,17 @@ return;
     // PostCondition: Returns array (size of number of months) and at
     // index corresponding to month number is the total count of that month
     //----------------------------------------------------------------
-	function GetMonthCount()
+	function GetMonthCount($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot " . $lotNumber;
+
 
 		// Set up the array of months (initially empty)
 		$monthOfYearCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
 
 		// Grabs each month and its corresponding count
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`,'%m')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`,'%m')";
 		$result = $connection->query($sql);
 
 		// Loops through table and stores count in array at correct month
@@ -436,15 +438,17 @@ return;
     // at corresponding month
     //----------------------------------------------------------------
 
-	function GetActiveDaysInMonth()
+	function GetActiveDaysInMonth($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot " . $lotNumber;
 		// Sets up array with the indices corresponding to correct month
 		$monthActiveDayCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
 
 		// Returns table with one column that says a month
 		// with a row corresponding to each active day
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ";
+
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
 		$result = $connection->query($sql);
 
 		// Loop through table and update value of active day number
@@ -462,15 +466,15 @@ return;
     // index corresponding to month number is the total count of that month
     // divided by the total number of active days that month
     //----------------------------------------------------------------
-	function MonthAverage()
+	function MonthAverage($lotNumber, $entering)
 	{
 		// Obtain an array of all the counts per month
 		$countOfMonths = array();
-		$countOfMonths = GetMonthCount();
+		$countOfMonths = GetMonthCount($lotNumber, $entering);
 
 		// Calculate the number of active days per month
 		$activeDaysInMonth = array();
-		$activeDaysInMonth = GetActiveDaysInMonth();
+		$activeDaysInMonth = GetActiveDaysInMonth($lotNumber, $entering);
 
 		//After calclating the number of active days per month, we can calculate the average per month for the entire year
 		$averagePerMonth = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
@@ -517,13 +521,14 @@ return;
     // and at index corresponding to day of week number, average for that 
     // day is calculated
     //----------------------------------------------------------------
-	function DayAverage()
+	function DayAverage($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot " . $lotNumber;
 		// This query returns the count for every day of the week
 		// Sunday = 0, Monday = 1, ... , Saturday = 6
 		$countForDayOfWeek = array();
-		$sql = "SELECT DATE_FORMAT(`time`, '%w') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%w')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%w') Time, COUNT(*) FROM `Entries` Where Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%w')";
 		$result = $connection->query($sql);
 		
 		// Pushes back the count into an array
@@ -537,7 +542,7 @@ return;
 		// i.e. how many Sundays or Mondays, etc.
 		$uniqueDayOfWeek = array(0, 0, 0, 0, 0, 0, 0);
 		// Query returns every unique date
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time FROM `Entries` WHERE location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
 		$result = $connection->query($sql);
 
 		// Loop through the result and update the array at the correct index (found with a defined function)
@@ -559,11 +564,12 @@ return;
 		return $averagePerDay;
 	}
 
-	function HourAverage()
+	function HourAverage($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot " . $lotNumber;
 		$hourOfDayCount = array("00"=> 0, "01"=>0,"02"=> 0,"03"=> 0,"04"=> 0,"05"=> 0,"06"=> 0,"07"=> 0,"08"=> 0,"09"=> 0,"10"=> 0,"11"=> 0,"12"=> 0,"13"=> 0,"14"=> 0,"15"=> 0,"16"=> 0,"17"=> 0,"18"=> 0,"19"=> 0,"20"=> 0,"21"=> 0,"22"=> 0,"23"=> 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%H')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%H') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%H')";
 		$result = $connection->query($sql);
 		while($row = $result->fetch_assoc())
 		{
@@ -572,7 +578,7 @@ return;
 
 		$activeHourOfDayCount = array("00"=> 0, "01"=>0,"02"=> 0,"03"=> 0,"04"=> 0,"05"=> 0,"06"=> 0,"07"=> 0,"08"=> 0,"09"=> 0,"10"=> 0,"11"=> 0,"12"=> 0,"13"=> 0,"14"=> 0,"15"=> 0,"16"=> 0,"17"=> 0,"18"=> 0,"19"=> 0,"20"=> 0,"21"=> 0,"22"=> 0,"23"=> 0);
 
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time FROM `Entries` WHERE location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H')";
 		$result = $connection->query($sql);
 		while($row = $result->fetch_assoc())
 		{
@@ -608,14 +614,15 @@ return;
 	// holds the number of people at that day (correspond with same index)
     //----------------------------------------------------------------
 
-	function DaysAndCountOfCurrentWeek()
+	function DaysAndCountOfCurrentWeek($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot " . $lotNumber;
 		$uniqueDay = array();
 		$countPerDay = array();
 		$maxCount = 0;
 		// Returns a table with the unique days and their corresponding counts of the last seven days 
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 7";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 7";
 		$result = $connection->query($sql);
 		// Lops through the table and stores the results in two vectors
 		while($row = $result->fetch_assoc())
@@ -635,17 +642,11 @@ return;
 		return $returnArray;
 	}
 
-	function HoursAndCountOfCurrentDay()
+	function HoursAndCountOfCurrentDay($lotNumber, $entering)
 	{
 		global $connection;
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') DESC LIMIT 1";
-		$result = $connection->query($sql);
-		while($row = $result->fetch_assoc())
-		{
-			$lastDay = $row['Time'];
-		}
-
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
+		$lotNumber = "Lot " . $lotNumber;
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
 		$result = $connection->query($sql);
 		$dataPoints = array();
 		$maxCount = 0;
@@ -669,9 +670,10 @@ return;
     // to return a predicted count for that day or returns no answer
     // if either averages are 0
     //----------------------------------------------------------------
-	function PredictionByDayAndMonth($day)
+	function PredictionByDayAndMonth($day, $lotNumber, $entering)
 	{
 		$month = substr($day, 5, 2);
+		$lotNumber = "Lot ". $lotNumber;
 		$averagePerDay = array();
 		// Obtains the averages of the days of the week
 		$averagePerDay = DayAverage();
@@ -681,7 +683,7 @@ return;
 
 		$averagePerMonth = array();
 		// Obtains the average of the months
-		$averagePerMonth = MonthAverage();
+		$averagePerMonth = MonthAverage($lotNumber, $entering);
 		// Retrieves the average for the specific month
 		$selectedMonthAvg = $averagePerMonth[$month];
 
@@ -699,16 +701,17 @@ return;
 		return $prediction;
 	}
 
-	function PredictionByHourAndDay($dayHour)
+	function PredictionByHourAndDay($dayHour, $lotNumber, $entering)
 	{
 		$day = substr($dayHour, 0, 10);
+		$lotNumber = "Lot ". $lotNumber;
 		$averagePerDay = array();
 		$averagePerDay = DayAverage();
 		$dayToNumber = DayOfWeekToNumber($day);
 		$selectedDayAvg = $averagePerDay[$dayToNumber];
 
 		$averagePerHour = array();
-		$averagePerHour = HourAverage();
+		$averagePerHour = HourAverage($lotNumber, $entering);
 		$hour = substr($dayHour, 11);
 		$selectedHourAvg = $averagePerHour[$hour];
 
@@ -726,11 +729,12 @@ return;
 		return $prediction;
 	}
 
-	function PredictNextWeek()
+	function PredictNextWeek($lotNumber, $entering)
 	{
 		global $connection;
+		$lotNumber = "Lot ". $lotNumber;
 		// Returns a table with the unique days and their corresponding counts of the last seven days 
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ORDER BY `record` DESC LIMIT 7";
 		$result = $connection->query($sql);
 		$dataPoints = array();
 		$maxCount = 0;
@@ -748,10 +752,11 @@ return;
 
 	}
 
-	function PredictNextDay()
+	function PredictNextDay($lotNumber, $entering)
 	{
 		global $connection;
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
+		$lotNumber = "Lot ". $lotNumber;
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d %H') Time, COUNT(*) FROM `Entries` WHERE Entering = '.$entering.' and location = '.$lotNumber.' GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d %H') DESC limit 24";
 		$result = $connection->query($sql);
 		$dataPoints = array();
 		$maxCount = 0;
