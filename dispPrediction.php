@@ -1,28 +1,44 @@
+<!-- /****************************************************
+** File: Proj2DispPrediction
+** Project: Project 2 
+**
+** 
+**
+****************************************************/-->
+
 <?php
 	#include '/vendor/autoload.php';
 	#use Phpml\Regression\SVR;
 
-	$host = "database.cse.tamu.edu";
-	$username = "emmaleepk";
-	$password = "csce315AAE";
-	$dbname = "emmaleepk";
-	$connection = mysql_connect($host, $username, $password);
-	mysql_select_db($dbname);
+	// Navigation header to access all pages
 	include("header.php");
+	// File that contains all the queries that are used
+	include_once("Proj2Queries.php");
 ?>
 
 <?php
-	function uniqueDaysAndCount()
+	//----------------------------------------------------------------
+    // Name: UniqueDaysAndCount
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns an array that holds two arrays. One holds the
+	// unique days in the database and the other holds the number of people
+	// at that day (correspond with same index)
+    //----------------------------------------------------------------
+	function UniqueDaysAndCount()
 	{
 		$uniqueDay = array();
 		$countPerDay = array();
+		// Returns a table with the unique days and their corresponding counts
 		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
 		$result = mysql_query($sql);
+
+		// Lops through the table and stores the results in two vectors
 		while($row = mysql_fetch_assoc($result))
 		{
 			array_push($uniqueDay, $row['Time']);
 			array_push($countPerDay, $row['COUNT(*)']);
 		}
+		// Returns an array that holds both arrays
 		$arrayReturn = array();
 		array_push($arrayReturn, $uniqueDay, $countPerDay);
 		return $arrayReturn;
@@ -30,7 +46,7 @@
 	}
 
 	$arrayDaysAndCount = array();
-	$arrayDaysAndCount = uniqueDaysAndCount();
+	$arrayDaysAndCount = UniqueDaysAndCount();
 	$arrayDays = $arrayDaysAndCount[0];
 	$arrayCount = $arrayDaysAndCount[1];
 	var_dump($arrayDays);
@@ -85,7 +101,8 @@
 <div>
 <?php
 echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-                    <script         src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>');
+      <script src="https://canvasjs.com/assets/script/canvasjs.min.js"> </script>');
+
 	$parkingLots = array();
 	$notParkingLots = array(2,16,17,28,29,31,39,46,52,53,56,57,105,106,116,121);
 	$letterParkingLots = array(10,30,33,36,40,72,95,99,100,122);
@@ -117,8 +134,31 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	if($parkingLotSelection != NULL)
 	{
 		$monthSelected = substr($dateSelection, 5, 2);
-		echo(predictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
+		echo(PredictionByDayAndMonth($dayOfWeekNumber, $monthSelected));
 	}
+
+
+	print(PredictionByDayAndMonth('04/19/2018',"04"));
+	$dataPointsPrediction = array();
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/22/2018','04'), "label" => '04/22/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/23/2018','04'), "label" => '04/23/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/24/2018','04'), "label" => '04/24/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/25/2018','04'), "label" => '04/25/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/26/2018','04'), "label" => '04/26/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/27/2018','04'), "label" => '04/27/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+	$dataPrediction = array("y"=>PredictionByDayAndMonth('04/28/2018','04'), "label" => '04/28/2018');
+	array_push($dataPointsPrediction, $dataPrediction);
+
+
+
+
+
 /*	
 	function getMonthAverage($month)
 	{
@@ -144,97 +184,6 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 	}	
 	#print(getMonthAverage(04));
 */
-	function getMonthCount()
-	{
-		// Here we are counting the total occurances per month so that we can later average
-		// the months with their number of active days
-		$monthOfYearCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`,'%m')";
-		$result = mysql_query($sql);
-		while($row = mysql_fetch_assoc($result))
-		{
-			$monthOfYearCount[$row['Time']] = $row['COUNT(*)'];
-		}
-		return $monthOfYearCount;
-		
-	}
-
-
-	//finds the total numbers of days in every month that data was found in 
-	function getActiveDaysInMonth()
-	{
-		$monthActiveDayCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
-		$result = mysql_query($sql);
-		while ($row = mysql_fetch_assoc($result))
-		{
-			$monthActiveDayCount[$row['Time']] += 1;
-		}
-		return $monthActiveDayCount;
-	}	
-
-	// takes the total count of each month and divides it by the total number of active days in that month
-	function MonthAverage()
-	{
-		// obtain an array of all the counts per month
-		$countOfMonths = array();
-		$countOfMonths = getMonthCount();
-		// We need to calculate the number of active days per month
-		$activeDaysInMonth = array();
-		$activeDaysInMonth = getActiveDaysInMonth();
-		//After calclating the number of active days per month, we can calculate the average per month for the entire year
-		$averagePerMonth = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
-		for($i = 1; $i < 13; $i++)
-		{
-			//prevents division by 0 error :)
-			if($i < 10){$count = "0".$i;}
-			else {$count = "".$i."";}
-			if($activeDaysInMonth[$count] != 0) 
-			{
-				$averagePerMonth[$count] = $countOfMonths[$count]/$activeDaysInMonth[$count];
-			}
-		}
-		return $averagePerMonth;
-	}
-
-
-	//translates the date to a number (to be used in array)
-	function DayOfWeekToNumber($date)
-	{
-		$dayOfWeek = date('l', strtotime($date));
-		$dayOfWeekToNumber = array("Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6);
-		$dayOfWeekNumber = $dayOfWeekToNumber[$dayOfWeek];
-		return $dayOfWeekNumber;
-	}
-
-
-	//calculates the average for each day of week 
-	function DayAverage()
-	{
-		$countForDayOfWeek = array();
-		$sql = "SELECT DATE_FORMAT(`time`, '%w') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%w')";
-		$result = mysql_query($sql);
-		while($row = mysql_fetch_assoc($result))
-		{
-			array_push($countForDayOfWeek, $row['COUNT(*)']);
-		}
-		$uniqueDayOfWeek = array(0, 0, 0, 0, 0, 0, 0);
-		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
-		$result = mysql_query($sql);
-		while($row = mysql_fetch_assoc($result))
-		{
-			$dayOfWeekNumber = DayOfWeekToNumber($row['Time']);
-			$uniqueDayOfWeek[$dayOfWeekNumber] += 1;
-		}
-		
-		$averagePerDay = array();
-		for ($i = 0; $i < count($uniqueDayOfWeek); $i++)
-		{
-			$average = $countForDayOfWeek[$i] / $uniqueDayOfWeek[$i];
-			array_push($averagePerDay, $average);	
-		}	
-		return $averagePerDay;
-	}
 
 /*
 	#0=Sunday 6=Saturday#
@@ -279,54 +228,6 @@ echo('<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 		}
 		return $prediction;		
 	}*/
-
-	//prediction model takes the average for each month and average of each day of week and creates a prediction for the submitted day and month of interest
-	function predictionByDayAndMonth($day, $month)
-	{
-		$averagePerDay = array();
-		$averagePerDay = DayAverage();
-		
-		$dayToNumber = DayOfWeekToNumber($day);		
-
-		$selectedDayAvg = $averagePerDay[$dayToNumber];
-		$averagePerMonth = MonthAverage();
-		$selectedMonthAvg = $averagePerMonth[$month];
-		if (($selectedDayAvg == 0) || ($selectedMonthAvg == 0))
-		{
-			$prediction = "Not enough data!";
-			return $prediction;
-		}
-		else
-		{
-			$prediction = ($selectedDayAvg+$selectedMonthAvg)/2;
-		}
-		return $prediction;
-	}
-
-	print(predictionByDayAndMonth('04/19/2018',"04"));
-	$dataPointsPrediction = array();
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/15/2018','04'), "label" => '04/15/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/16/2018','04'), "label" => '04/16/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/17/2018','04'), "label" => '04/17/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/18/2018','04'), "label" => '04/18/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/19/2018','04'), "label" => '04/19/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/20/2018','04'), "label" => '04/20/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-	$dataPrediction = array("y"=>predictionByDayAndMonth('04/21/2018','04'), "label" => '04/21/2018');
-	array_push($dataPointsPrediction, $dataPrediction);
-
-
-
-
-
-
-
-
 
 ?>
 <script>

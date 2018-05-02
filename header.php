@@ -14,7 +14,7 @@
     <head>
         <title>People Sensor 9000</title>
         <!-- How to refresh the page consistently - every 10 seconds -->
-        <meta http-equiv="refresh" content="10" />
+        <meta http-equiv="refresh" content="60" />
         <!-- Connection to stylesheet to make the webpage more visually appealing  -->
         <link href = "./Proj2Style.css?<?php echo time();?>" type = "text/css" rel = "stylesheet">
     </head>

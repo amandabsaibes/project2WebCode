@@ -399,4 +399,202 @@ return;
 	return;
 	}
 
+	//----------------------------------------------------------------
+    // Name: GetMonthCount
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns array (size of number of months) and at
+    // index corresponding to month number is the total count of that month
+    //----------------------------------------------------------------
+	function GetMonthCount()
+	{
+		global $connection;
+
+		// Set up the array of months (initially empty)
+		$monthOfYearCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+
+		// Grabs each month and its corresponding count
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`,'%m')";
+		$result = $connection->query($sql);
+
+		// Loops through table and stores count in array at correct month
+		while($row = $result->fetch_assoc())
+		{
+			$monthOfYearCount[$row['Time']] = $row['COUNT(*)'];
+		}
+
+		// Returns an array of the values
+		return $monthOfYearCount;
+		
+	}
+
+
+	//----------------------------------------------------------------
+    // Name: GetActiveDaysInMonth
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns array (size of number of months) that 
+    // has the count of the number of days that the sensor was used 
+    // at corresponding month
+    //----------------------------------------------------------------
+
+	function GetActiveDaysInMonth()
+	{
+		global $connection;
+		// Sets up array with the indices corresponding to correct month
+		$monthActiveDayCount = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+
+		// Returns table with one column that says a month
+		// with a row corresponding to each active day
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
+		$result = $connection->query($sql);
+
+		// Loop through table and update value of active day number
+		while ($row = $result->fetch_assoc())
+		{
+			$monthActiveDayCount[$row['Time']] += 1;
+		}
+		return $monthActiveDayCount;
+	}	
+
+	//----------------------------------------------------------------
+    // Name: MonthAverage
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns array (size of number of months) and at
+    // index corresponding to month number is the total count of that month
+    // divided by the total number of active days that month
+    //----------------------------------------------------------------
+	function MonthAverage()
+	{
+		// Obtain an array of all the counts per month
+		$countOfMonths = array();
+		$countOfMonths = GetMonthCount();
+
+		// Calculate the number of active days per month
+		$activeDaysInMonth = array();
+		$activeDaysInMonth = GetActiveDaysInMonth();
+
+		//After calclating the number of active days per month, we can calculate the average per month for the entire year
+		$averagePerMonth = array("01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, "12" => 0);
+		for($i = 1; $i < 13; $i++)
+		{
+			// Ensures that it matches with the indices of the array
+			if($i < 10){$count = "0".$i;}
+			else {$count = "".$i."";}
+
+			//prevents division by 0 error :)
+			if($activeDaysInMonth[$count] != 0) 
+			{
+				// Creates average!
+				$averagePerMonth[$count] = $countOfMonths[$count]/$activeDaysInMonth[$count];
+			}
+		}
+		return $averagePerMonth;
+	}
+
+
+	//----------------------------------------------------------------
+    // Name: DayOfWeekToNumber
+    // PreCondition: Database is created and has values and date is passed
+    // PostCondition: Returns a number corresponding to the day of the week
+    //----------------------------------------------------------------
+	function DayOfWeekToNumber($date)
+	{
+		// Converts timestamp to day of week (sunday, Monday, ...)
+		$dayOfWeek = date('l', strtotime($date));
+
+		// Associative array to communicate which day means which number
+		$dayOfWeekToNumber = array("Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6);
+
+		// Evaluates the number of the given day
+		$dayOfWeekNumber = $dayOfWeekToNumber[$dayOfWeek];
+		return $dayOfWeekNumber;
+	}
+
+
+	//----------------------------------------------------------------
+    // Name: DayAverage
+    // PreCondition: Database is created and has values
+    // PostCondition: Returns array (size of number of days of a week - 7) 
+    // and at index corresponding to day of week number, average for that 
+    // day is calculated
+    //----------------------------------------------------------------
+	function DayAverage()
+	{
+		global $connection;
+		// This query returns the count for every day of the week
+		// Sunday = 0, Monday = 1, ... , Saturday = 6
+		$countForDayOfWeek = array();
+		$sql = "SELECT DATE_FORMAT(`time`, '%w') Time, COUNT(*) FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%w')";
+		$result = $connection->query($sql);
+		
+		// Pushes back the count into an array
+		// Resulting array is size 7 (each index corresponds to a day of the week)
+		while($row = $result->fetch_assoc())
+		{
+			array_push($countForDayOfWeek, $row['COUNT(*)']);
+		}
+
+		// Now, need to find the NUMBER of time the day of the week appeared
+		// i.e. how many Sundays or Mondays, etc.
+		$uniqueDayOfWeek = array(0, 0, 0, 0, 0, 0, 0);
+		// Query returns every unique date
+		$sql = "SELECT DATE_FORMAT(`time`, '%Y-%m-%d') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
+		$result = $connection->query($sql);
+
+		// Loop through the result and update the array at the correct index (found with a defined function)
+		while($row = $result->fetch_assoc())
+		{
+			$dayOfWeekNumber = DayOfWeekToNumber($row['Time']);
+			$uniqueDayOfWeek[$dayOfWeekNumber] += 1;
+		}
+
+		// Now, need to average the values
+		// ex) (Count of entries for all Sundays) / (Unique number of Sundays) = Average for Sundays 
+		$averagePerDay = array();
+		for ($i = 0; $i < count($uniqueDayOfWeek); $i++)
+		{
+			// Index 0 = Sunday, ..., 6 = Saturday for both arrays
+			$average = $countForDayOfWeek[$i] / $uniqueDayOfWeek[$i];
+			array_push($averagePerDay, $average);	
+		}	
+		return $averagePerDay;
+	}
+
+	//----------------------------------------------------------------
+    // Name: PredictionByDayAndMonth
+    // PreCondition: Database is created and has values. 
+    // Date time stamp passed in and month (only two number - ex. (04)) 
+    // PostCondition: returns an average of the average of the passed in month 
+    // and an average of the day of the week of the passed in day 
+    // to return a predicted count for that day or returns no answer
+    // if either averages are 0
+    //----------------------------------------------------------------
+	function PredictionByDayAndMonth($day, $month)
+	{
+		$averagePerDay = array();
+		// Obtains the averages of the days of the week
+		$averagePerDay = DayAverage();
+		$dayToNumber = DayOfWeekToNumber($day);		
+		// Retrieves the average for the selected day
+		$selectedDayAvg = $averagePerDay[$dayToNumber];
+
+		$averagePerMonth = array();
+		// Obtains the average of the months
+		$averagePerMonth = MonthAverage();
+		// Retrieves the average for the specific month
+		$selectedMonthAvg = $averagePerMonth[$month];
+
+		// Checks to ensure that valid averages were obtained
+		if (($selectedDayAvg <= 0) || ($selectedMonthAvg <= 0))
+		{
+			$prediction = "Not enough data!";
+			return $prediction;
+		}
+		else
+		{
+			// Averages the values to develop a prediction for the specified day
+			$prediction = ($selectedDayAvg + $selectedMonthAvg) / 2;
+		}
+		return $prediction;
+	}
+
 ?>
