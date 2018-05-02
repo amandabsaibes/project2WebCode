@@ -401,7 +401,7 @@ return;
 
 	//----------------------------------------------------------------
     // Name: GetMonthCount
-    // PreCondition: Database is created and has values
+    // PreCondition: Database is created and has values 
     // PostCondition: Returns array (size of number of months) and at
     // index corresponding to month number is the total count of that month
     //----------------------------------------------------------------
@@ -444,7 +444,7 @@ return;
 
 		// Returns table with one column that says a month
 		// with a row corresponding to each active day
-		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d')";
+		$sql = "SELECT DATE_FORMAT(`time`, '%m') Time FROM `Entries` GROUP BY DATE_FORMAT(`time`, '%Y-%m-%d') ";
 		$result = $connection->query($sql);
 
 		// Loop through table and update value of active day number
@@ -651,7 +651,8 @@ return;
 		$maxCount = 0;
 		while($row = $result->fetch_assoc())
 		{
-			$data = array("y"=>$row['COUNT(*)'], "label"=>$row['Time']);
+			$label = $row['Time'] . ':00:00';
+			$data = array("y"=>$row['COUNT(*)'], "label"=>$label);
 			array_unshift($dataPoints, $data);
 			if($row['COUNT(*)'] > $maxCount) {$maxCount = $row['COUNT(*)'];}
 		}
@@ -760,7 +761,9 @@ return;
 			$newTime = date("Y-m-d H:m:s", strtotime(sprintf('+%d hour',24), strtotime($time)));
 			$newHour = substr($newTime, 0, 13);
 			$prediction = PredictionByHourAndDay($newHour);
-			$data = array("y"=>$prediction, "label"=>$newHour);
+			$label = $newHour . ':00:00';
+			$data = array("y"=>$prediction, "label"=>$label);
+			array_unshift($dataPoints, $data);
 			if($prediction > $maxCount) {$maxCount = $prediction;}
 
 		}

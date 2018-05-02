@@ -50,3 +50,8 @@ li a:hover:not(.active)
 {
     background-color: #BBC7BA;
 }
+
+.chart 
+{
+    margin-top: 0%;
+}
